@@ -80,7 +80,7 @@ var host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddHostedService<GetSchedules>();
-        //services.AddHostedService<TestSchedules>();
+        services.AddHostedService<TestSchedules>();
     })
     .UseSerilog()
     .Build();
