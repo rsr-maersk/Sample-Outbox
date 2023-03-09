@@ -79,7 +79,8 @@ var host = Host.CreateDefaultBuilder(args)
 
         });
 
-        services.AddHostedService<TestSchedules>();
+        services.AddHostedService<GetSchedules>();
+        //services.AddHostedService<TestSchedules>();
     })
     .UseSerilog()
     .Build();
@@ -100,22 +101,22 @@ public class GetSchedules : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //await using var scope = _serviceProvider.CreateAsyncScope();
-        //await using var db = scope.ServiceProvider.GetRequiredService<RegistrationDbContext>();
-        //var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        await using var db = scope.ServiceProvider.GetRequiredService<RegistrationDbContext>();
+        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
 
-        //foreach (var state in db.RegistrationState.Where(x => x.CurrentState != "Complete"))
-        //{
-        //    await publishEndpoint.Publish(new RegistrationRestart
-        //    {
-        //        RegistrationDate = state.RegistrationDate,
-        //        RegistrationId = Guid.NewGuid(),
-        //        EventId = state.EventId,
-        //        Payment = state.Payment,
-        //        MemberId = state.MemberId,
-        //    }, stoppingToken);
-        //    ;
-        //}
+        foreach (var state in db.RegistrationState.Where(x => x.CurrentState != "Complete"))
+        {
+            await publishEndpoint.Publish(new RegistrationRestart
+            {
+                RegistrationDate = state.RegistrationDate,
+                RegistrationId = state.CorrelationId,
+                EventId = state.EventId,
+                Payment = state.Payment,
+                MemberId = state.MemberId,
+            }, stoppingToken);
+            ;
+        }
         ;
     }
 }
@@ -143,7 +144,7 @@ public class TestSchedules : BackgroundService
             await using var scope = _serviceProvider.CreateAsyncScope();
             var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
         
-            await publishEndpoint.Publish(new RegistrationSubmitted()
+            await publishEndpoint.Publish(new RegistrationSubmitted
             {
                 RegistrationDate = DateTime.UtcNow,
                 RegistrationId = Guid.NewGuid(),

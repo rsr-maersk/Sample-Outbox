@@ -16,25 +16,16 @@ public class RegistrationStateMachine :
 
         Event(() => RegistrationSubmitted, x => x.CorrelateById(m => m.Message.RegistrationId));
         Event(() => RegistrationRestart, x => x.CorrelateById(m => m.Message.RegistrationId));
+        
         Schedule(() => DelayStart, x => x.DelayStartTokenId, x => x.Received = e => e.CorrelateById(m => m.Message.CorrelationId));
-        Initially(
-            When(RegistrationSubmitted)
-                .Then(context =>
-                {
-                    context.Saga.RegistrationDate = context.Message.RegistrationDate;
-                    context.Saga.EventId = context.Message.EventId;
-                    context.Saga.MemberId = context.Message.MemberId;
-                    context.Saga.Payment = context.Message.Payment;
-                })
-                .TransitionTo(Registered)
-                .Schedule(DelayStart, x => new DelayStart { CorrelationId = x.Saga.CorrelationId },
-                    _ => TimeSpan.FromSeconds(10))
-                .TransitionTo(Delayed)
 
-            //WhenRegistration(RegistrationSubmitted)
+        Initially(
+            WhenRegistration(RegistrationSubmitted)
             //, WhenRegistration(RegistrationRestart!)
             ); 
         
+        DuringAny(WhenRegistration(RegistrationRestart!));
+
         During(Delayed,
             When(DelayStart!.Received)
                 .TransitionTo(Complete));
@@ -42,6 +33,7 @@ public class RegistrationStateMachine :
 
     }
 
+   
     private EventActivityBinder<RegistrationState, T> WhenRegistration<T>(Event<T> registrationRestart)
         where T : class, IOutboxRegistration
     {
