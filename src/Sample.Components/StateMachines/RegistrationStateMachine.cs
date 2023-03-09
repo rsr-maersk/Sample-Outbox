@@ -20,9 +20,7 @@ public class RegistrationStateMachine :
         Schedule(() => DelayStart, x => x.DelayStartTokenId, x => x.Received = e => e.CorrelateById(m => m.Message.CorrelationId));
 
         Initially(
-            WhenRegistration(RegistrationSubmitted)
-            //, WhenRegistration(RegistrationRestart!)
-            ); 
+            WhenRegistration(RegistrationSubmitted)); 
         
         DuringAny(WhenRegistration(RegistrationRestart!));
 

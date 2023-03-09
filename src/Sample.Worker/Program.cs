@@ -1,10 +1,6 @@
-using System.Diagnostics;
 using MassTransit;
-using MassTransit.Metadata;
+using MassTransit.NewIdProviders;
 using Microsoft.EntityFrameworkCore;
-using OpenTelemetry;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Sample.Components;
 using Sample.Components.Consumers;
 using Sample.Components.Contracts;
@@ -12,7 +8,6 @@ using Sample.Components.Services;
 using Sample.Components.StateMachines;
 using Serilog;
 using Serilog.Events;
-using static MassTransit.Transports.ReceiveEndpoint;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -28,6 +23,8 @@ Log.Logger = new LoggerConfiguration()
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
+        NewId.SetProcessIdProvider(new CurrentProcessIdProvider());
+
         services.AddDbContext<RegistrationDbContext>(x =>
         {
             var connectionString = hostContext.Configuration.GetConnectionString("Default");
@@ -143,11 +140,12 @@ public class TestSchedules : BackgroundService
             Thread.Sleep(10000);
             await using var scope = _serviceProvider.CreateAsyncScope();
             var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        
+
+            var registrationId = Guid.NewGuid();
             await publishEndpoint.Publish(new RegistrationSubmitted
             {
                 RegistrationDate = DateTime.UtcNow,
-                RegistrationId = Guid.NewGuid(),
+                RegistrationId = NewId.NextSequentialGuid(),
                 EventId = eventId.ToString(),
                 Payment = payment,
                 MemberId = memberId.ToString(),
