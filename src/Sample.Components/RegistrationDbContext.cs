@@ -15,6 +15,8 @@ public class RegistrationDbContext :
     {
     }
 
+    public DbSet<RegistrationState> RegistrationState { get; set; }
+
     protected override IEnumerable<ISagaClassMap> Configurations
     {
         get { yield return new RegistrationStateMap(); }
@@ -33,7 +35,7 @@ public class RegistrationDbContext :
 
     static void MapRegistration(ModelBuilder modelBuilder)
     {
-        EntityTypeBuilder<Registration> registration = modelBuilder.Entity<Registration>();
+        var registration = modelBuilder.Entity<RegistrationTest1>();
 
         registration.Property(x => x.Id);
         registration.HasKey(x => x.Id);

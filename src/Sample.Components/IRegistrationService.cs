@@ -2,5 +2,5 @@ namespace Sample.Components;
 
 public interface IRegistrationService
 {
-    Task<Registration> SubmitRegistration(string eventId, string memberId, decimal payment);
+    Task<RegistrationTest1> SubmitRegistration(string eventId, string memberId, decimal payment);
 }

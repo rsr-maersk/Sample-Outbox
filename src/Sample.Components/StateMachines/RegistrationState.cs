@@ -14,4 +14,5 @@ public class RegistrationState :
     public string MemberId { get; set; } = null!;
     public decimal Payment { get; set; }
     public Guid CorrelationId { get; set; }
+    public Guid? DelayStartTokenId { get; set; }
 }

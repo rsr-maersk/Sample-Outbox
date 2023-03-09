@@ -2,6 +2,7 @@ namespace Sample.Components;
 
 using Contracts;
 using MassTransit;
+using MassTransit.Middleware.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -10,7 +11,7 @@ public class RegistrationService :
     IRegistrationService
 {
     readonly RegistrationDbContext _dbContext;
-    readonly IPublishEndpoint _publishEndpoint;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public RegistrationService(RegistrationDbContext dbContext, IPublishEndpoint publishEndpoint)
     {
@@ -18,9 +19,9 @@ public class RegistrationService :
         _publishEndpoint = publishEndpoint;
     }
 
-    public async Task<Registration> SubmitRegistration(string eventId, string memberId, decimal payment)
+    public async Task<RegistrationTest1> SubmitRegistration(string eventId, string memberId, decimal payment)
     {
-        var registration = new Registration
+        var registration = new RegistrationTest1
         {
             RegistrationId = NewId.NextGuid(),
             RegistrationDate = DateTime.UtcNow,
@@ -29,15 +30,15 @@ public class RegistrationService :
             Payment = payment
         };
 
-        await _dbContext.Set<Registration>().AddAsync(registration);
+        await _dbContext.Set<RegistrationTest1>().AddAsync(registration);
 
         await _publishEndpoint.Publish(new RegistrationSubmitted
         {
             RegistrationId = registration.RegistrationId,
-            RegistrationDate = registration.RegistrationDate,
+            RegistrationDate = registration.RegistrationDate.AddMinutes(1),
             MemberId = registration.MemberId,
             EventId = registration.EventId,
-            Payment = payment
+            Payment = payment,
         });
 
         try

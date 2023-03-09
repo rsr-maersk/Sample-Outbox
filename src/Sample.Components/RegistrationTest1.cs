@@ -1,6 +1,6 @@
 namespace Sample.Components;
 
-public class Registration
+public class RegistrationTest1
 {
     public int Id { get; set; }
 

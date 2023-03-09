@@ -80,15 +80,20 @@ builder.Services.AddMassTransit(x =>
         o.UseBusOutbox();
     });
 
-    x.UsingRabbitMq((_, cfg) =>
+    x.UsingInMemory((context, cfg) =>
     {
-        cfg.AutoStart = true;
+        cfg.ConfigureEndpoints(context);
     });
+
+    //x.UsingRabbitMq((_, cfg) =>
+    //{
+    //    cfg.AutoStart = true;
+    //});
 });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+//builder.Services.AddHostedService<GetSchedules>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -102,3 +107,46 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+public class GetSchedules : BackgroundService
+{
+    //private readonly RegistrationDbContext _db;
+    private readonly IPublishEndpoint _publishEndpoint;
+
+    //public GetSchedules(RegistrationDbContext db, IPublishEndpoint publishEndpoint)
+    //{
+    //    _db = db;
+    //    _publishEndpoint = publishEndpoint;
+    //}
+
+    //public GetSchedules(RegistrationDbContext db)
+    //{
+    //    _db = db;
+    //}
+
+
+    public GetSchedules(IPublishEndpoint publishEndpoint)
+    {
+        _publishEndpoint = publishEndpoint;
+    }
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        //foreach (var state in _db.RegistrationState.Where(x => x.CurrentState != "Complete"))
+        //{
+        //_publishEndpoint.Publish(new RegistrationSubmitted
+        //{
+        //    RegistrationDate = state.RegistrationDate,
+        //    RegistrationId = state.CorrelationId,
+        //    EventId = state.EventId,
+        //    Payment = state.Payment,
+        //    MemberId = state.MemberId
+        //}, stoppingToken);
+        //    ;
+        //}
+        ;
+        return Task.CompletedTask;
+    }
+}
